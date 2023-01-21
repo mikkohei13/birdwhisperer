@@ -1,0 +1,11 @@
+
+version: '3'
+
+services:
+
+  python:
+    build: .
+    image: birdwhisperer
+    container_name: birdwhisperer
+    volumes:
+      - ./app:/app
