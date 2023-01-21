@@ -1,3 +1,9 @@
+app/audio/
+app/data.tsv
+app/data_transcript.py
+app/results.txt
+
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
