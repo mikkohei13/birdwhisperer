@@ -6,49 +6,15 @@ import re
 import editdistance
 from datetime import datetime
 
+import data_transcript
+
+
 # Finnish species except most rare ones, most common species groups & codes, based on Laji.fi abundance data
 # Added species synonyms: heinäsorsa, isokuovi, kalasääski, kesykyyhky, pulu
 # Added some mammals
-valid_species = ['kyhmyjoutsen', 'pikkujoutsen', 'laulujoutsen', 'metsähanhi', 'taigametsähanhi', 'tundrametsähanhi', 'lyhytnokkahanhi', 'tundrahanhi', 'kiljuhanhi', 'merihanhi', 'tiibetinhanhi', 'kanadanhanhi', 'pikkukanadanhanhi', 'valkoposkihanhi', 'sepelhanhi', 'punakaulahanhi', 'ruostesorsa', 'ristisorsa', 'mandariinisorsa', 'haapana', 'amerikanhaapana', 'harmaasorsa', 'tavi', 'amerikantavi', 'sinisorsa', 'heinäsorsa', 'jouhisorsa', 'heinätavi', 'sinisiipitavi', 'lapasorsa', 'punapäänarsku', 'punasotka', 'amerikantukkasotka', 'ruskosotka', 'tukkasotka', 'lapasotka', 'haahka', 'kyhmyhaahka', 'allihaahka', 'alli', 'mustalintu', 'pilkkaniska', 'pilkkasiipi', 'telkkä', 'uivelo', 'tukkakoskelo', 'isokoskelo', 'kuparisorsa', 'viiriäinen', 'pyy', 'riekko', 'kiiruna', 'teeri', 'metso', 'peltopyy', 'fasaani', 'kaakkuri', 'kuikka', 'amerikanjääkuikka', 'jääkuikka', 'pikku-uikku', 'silkkiuikku', 'härkälintu', 'mustakurkku-uikku', 'mustakaulauikku', 'myrskylintu', 'suula', 'merimetso', 'kaulushaikara', 'yöhaikara', 'lehmähaikara', 'silkkihaikara', 'jalohaikara', 'harmaahaikara', 'mustahaikara', 'kattohaikara', 'mehiläishaukka', 'haarahaukka', 'isohaarahaukka', 'merikotka', 'hanhikorppikotka', 'munkkikorppikotka', 'käärmekotka', 'ruskosuohaukka', 'sinisuohaukka', 'arosuohaukka', 'niittysuohaukka', 'kanahaukka', 'varpushaukka', 'hiirihaukka', 'lännenhiirihaukka', 'idänhiirihaukka', 'arohiirihaukka', 'piekana', 'kiljukotka', 'pikkukiljukotka', 'maakotka', 'arokotka', 'sääksi', 'kalasääski', 'tuulihaukka', 'punajalkahaukka', 'ampuhaukka', 'nuolihaukka', 'muuttohaukka', 'luhtakana', 'luhtahuitti', 'pikkuhuitti', 'kääpiöhuitti', 'ruisrääkkä', 'liejukana', 'nokikana', 'kurki', 'neitokurki', 'pikkutrappi', 'paksujalka', 'pitkäjalka', 'avosetti', 'meriharakka', 'siperiankurmitsa', 'amerikankurmitsa', 'kapustarinta', 'tundrakurmitsa', 'arohyyppä', 'töyhtöhyyppä', 'pikkutylli', 'tylli', 'mustajalkatylli', 'keräkurmitsa', 'pikkukuovi', 'kuovi', 'isokuovi', 'mustapyrstökuiri', 'punakuiri', 'karikukko', 'isosirri', 'suokukko', 'suippopyrstösirri', 'jänkäsirriäinen', 'kuovisirri', 'lapinsirri', 'pulmussirri', 'suosirri', 'etelänsuosirri', 'merisirri', 'pikkusirri', 'tundravikla', 'palsasirri', 'vesipääsky', 'isovesipääsky', 'rantakurvi', 'rantasipi', 'metsäviklo', 'mustaviklo', 'valkoviklo', 'keltajalkaviklo', 'lampiviklo', 'liro', 'punajalkaviklo', 'jänkäkurppa', 'tundrakurppelo', 'lehtokurppa', 'taivaanvuohi', 'amerikantaivaanvuohi', 'heinäkurppa', 'siperiankurppa', 'pääskykahlaaja', 'aropääskykahlaaja', 'leveäpyrstökihu', 'merikihu', 'tunturikihu', 'lunni', 'riskilä', 'ruokki', 'pikkuruokki', 'etelänkiisla', 'pohjankiisla', 'pikkutiira', 'hietatiira', 'räyskä', 'mustatiira', 'valkosiipitiira', 'riuttatiira', 'kalatiira', 'lapintiira', 'pikkulokki', 'ruusulokki', 'tiiralokki', 'pikkukajava', 'naurulokki', 'mustanmerenlokki', 'kalalokki', 'selkälokki', 'harmaalokki', 'aroharmaalokki', 'etelänharmaalokki', 'ohotanlokki', 'grönlanninlokki', 'isolokki', 'merilokki', 'arokyyhky', 'kalliokyyhky', 'kesykyyhky', 'pulu', 'uuttukyyhky', 'sepelkyyhky', 'turkinkyyhky', 'turturikyyhky', 'idänturturikyyhky', 'käki', 'idänkäki', 'tornipöllö', 'kyläpöllönen', 'huuhkaja', 'hiiripöllö', 'varpuspöllö', 'lehtopöllö', 'viirupöllö', 'lapinpöllö', 'sarvipöllö', 'suopöllö', 'helmipöllö', 'kehrääjä', 'tervapääsky', 'kuningaskalastaja', 'mehiläissyöjä', 'sininärhi', 'harjalintu', 'käenpiika', 'harmaapäätikka', 'palokärki', 'käpytikka', 'valkoselkätikka', 'pikkutikka', 'pohjantikka', 'arokiuru', 'lyhytvarvaskiuru', 'töyhtökiuru', 'kangaskiuru', 'kiuru', 'tunturikiuru', 'törmäpääsky', 'haarapääsky', 'räystäspääsky', 'ruostepääsky', 'isokirvinen', 'mongoliankirvinen', 'nummikirvinen', 'taigakirvinen', 'metsäkirvinen', 'niittykirvinen', 'lapinkirvinen', 'luotokirvinen', 'keltavästäräkki', 'sitruunavästäräkki', 'virtavästäräkki', 'västäräkki', 'tilhi', 'koskikara', 'peukaloinen', 'rautiainen', 'taigarautiainen', 'mustakurkkurautiainen', 'punarinta', 'satakieli', 'etelänsatakieli', 'sinirinta', 'valkotäpläsinirinta', 'sinipyrstö', 'mustaleppälintu', 'leppälintu', 'pensastasku', 'nokitasku', 'sepeltasku', 'mustapäätasku', 'arotasku', 'kivitasku', 'nunnatasku', 'rusotasku', 'aavikkotasku', 'kirjorastas', 'sepelrastas', 'mustarastas', 'harmaakurkkurastas', 'ruostesiipirastas', 'mustakaularastas', 'räkättirastas', 'laulurastas', 'punakylkirastas', 'kulorastas', 'viirusirkkalintu', 'pensassirkkalintu', 'viitasirkkalintu', 'ruokosirkkalintu', 'pikkukultarinta', 'kultarinta', 'ruokokerttunen', 'kenttäkerttunen', 'viitakerttunen', 'luhtakerttunen', 'rytikerttunen', 'rastaskerttunen', 'rusorintakerttu', 'samettipääkerttu', 'kääpiökerttu', 'kirjokerttu', 'hernekerttu', 'pensaskerttu', 'lehtokerttu', 'mustapääkerttu', 'idänuunilintu', 'lapinuunilintu', 'hippiäisuunilintu', 'taigauunilintu', 'kashmirinuunilintu', 'siperianuunilintu', 'ruskouunilintu', 'vuoriuunilintu', 'sirittäjä', 'tiltaltti', 'idäntiltaltti', 'pajulintu', 'hippiäinen', 'tulipäähippiäinen', 'harmaasieppo', 'pikkusieppo', 'idänpikkusieppo', 'sepelsieppo', 'kirjosieppo', 'viiksitimali', 'pyrstötiainen', 'valkopäätiainen', 'sinitiainen', 'talitiainen', 'kuusitiainen', 'töyhtötiainen', 'viitatiainen', 'hömötiainen', 'lapintiainen', 'pähkinänakkeli', 'puukiipijä', 'pussitiainen', 'kuhankeittäjä', 'punapyrstölepinkäinen', 'pikkulepinkäinen', 'mustaotsalepinkäinen', 'isolepinkäinen', 'punapäälepinkäinen', 'närhi', 'kuukkeli', 'harakka', 'pähkinähakki', 'naakka', 'mustavaris', 'varis', 'nokivaris', 'korppi', 'kottarainen', 'punakottarainen', 'varpunen', 'pikkuvarpunen', 'peippo', 'järripeippo', 'keltahemppo', 'viherpeippo', 'tikli', 'vihervarpunen', 'hemppo', 'vuorihemppo', 'urpiainen', 'ruskourpiainen', 'tundraurpiainen', 'kirjosiipikäpylintu', 'pikkukäpylintu', 'isokäpylintu', 'punavarpunen', 'taviokuurna', 'punatulkku', 'nokkavarpunen', 'lapinsirkku', 'pulmunen', 'mäntysirkku', 'keltasirkku', 'peltosirkku', 'pohjansirkku', 'pikkusirkku', 'kultasirkku', 'pajusirkku', 'ruskopääsirkku', 'mustapääsirkku', 'harmaasirkku', 'loxia', 'sterna', 'gavia', 'aves', 'anser', 'anserbranta', 'anatidae', 'cygnus', 'larus', 'passer', 'pernisbuteo', 'jalohaukat', 'alcauria', 'anserini', 'buteo', 'anthus', 'passeriformes', 'laridae', 'turdus', 'charadriiformes', 'haukat', 'anas', 'acanthis', 'paridae', 'falco', 'phylloscopus', 'hirundininae', 'stercorarius', 'pöllöt', 'turdidae', 'päiväpetolinnut', 'numenius', 'sternidae', 'sylvia', 'asio', 'circus', 'columba', 'accipiter', 'parus', 'accipitriformes', 'sirosuohaukka', 'anseriformes', 'pluvialis', 'columbidae', 'tikat', 'dendrocopos', 'fringillidae', 'kotkat', 'melanitta', 'picidae', 'fringilla', 'motacilla', 'tringa', 'accipitridae', 'tsik-sirkku', 'medium picidae', 'koskelot', 'piciformes', 'carduelis', 'corvus', 'hirundinidae', 'larinae', 'passeridae', 'ficedula', 'sylviidae', 'corvidae', 'gaviiformes', 'mergus', 'poecile', 'aquila', 'varpuslinnut', 'käpylinnut', 'tiirat', 'kuikkalinnut', 'linnut', 'harmaahanhet', 'hanhet', 'sorsalinnut', 'pieni kahlaaja', 'joutsenet', 'iso kahlaaja', 'lokit', 'varpuset', 'hiirihaukat', 'päiväpetolinnut', 'ruokkilinnut', 'sorsat', 'kahlaajalinnut', 'kirviset', 'varpuslinnut', 'lokkilinnut', 'rastaat', 'kahlaajat', 'tiaislinnut', 'urpiaiset', 'tiaiset', 'jalohaukkalinnut', 'uunilinnut', 'pääskyt', 'kihut', 'pöllölinnut', 'rastaslinnut', 'petolinnut', 'kuovit', 'keskikokoinen kahlaaja', 'tiiralinnut', 'kertut', 'sarvipöllöt', 'suohaukat', 'kyyhkyt','kettu','rusakko','kaniini','metsäkauris','valkohäntäkauris','orava','liito-orava','piisami','minkki','supikoira','siili', 'lisälaji']
+valid_species = ['kyhmyjoutsen', 'pikkujoutsen', 'laulujoutsen', 'metsähanhi', 'taigametsähanhi', 'tundrametsähanhi', 'lyhytnokkahanhi', 'tundrahanhi', 'kiljuhanhi', 'merihanhi', 'tiibetinhanhi', 'kanadanhanhi', 'pikkukanadanhanhi', 'valkoposkihanhi', 'sepelhanhi', 'punakaulahanhi', 'ruostesorsa', 'ristisorsa', 'mandariinisorsa', 'haapana', 'amerikanhaapana', 'harmaasorsa', 'tavi', 'amerikantavi', 'sinisorsa', 'heinäsorsa', 'jouhisorsa', 'heinätavi', 'sinisiipitavi', 'lapasorsa', 'punapäänarsku', 'punasotka', 'amerikantukkasotka', 'ruskosotka', 'tukkasotka', 'lapasotka', 'haahka', 'kyhmyhaahka', 'allihaahka', 'alli', 'mustalintu', 'pilkkaniska', 'pilkkasiipi', 'telkkä', 'uivelo', 'tukkakoskelo', 'isokoskelo', 'kuparisorsa', 'viiriäinen', 'pyy', 'riekko', 'kiiruna', 'teeri', 'metso', 'peltopyy', 'fasaani', 'kaakkuri', 'kuikka', 'amerikanjääkuikka', 'jääkuikka', 'pikku-uikku', 'silkkiuikku', 'härkälintu', 'mustakurkku-uikku', 'mustakaulauikku', 'myrskylintu', 'suula', 'merimetso', 'kaulushaikara', 'yöhaikara', 'lehmähaikara', 'silkkihaikara', 'jalohaikara', 'harmaahaikara', 'mustahaikara', 'kattohaikara', 'mehiläishaukka', 'haarahaukka', 'isohaarahaukka', 'merikotka', 'hanhikorppikotka', 'munkkikorppikotka', 'käärmekotka', 'ruskosuohaukka', 'sinisuohaukka', 'arosuohaukka', 'niittysuohaukka', 'kanahaukka', 'varpushaukka', 'hiirihaukka', 'lännenhiirihaukka', 'idänhiirihaukka', 'arohiirihaukka', 'piekana', 'kiljukotka', 'pikkukiljukotka', 'maakotka', 'arokotka', 'sääksi', 'kalasääski', 'tuulihaukka', 'punajalkahaukka', 'ampuhaukka', 'nuolihaukka', 'muuttohaukka', 'luhtakana', 'luhtahuitti', 'pikkuhuitti', 'kääpiöhuitti', 'ruisrääkkä', 'liejukana', 'nokikana', 'kurki', 'neitokurki', 'pikkutrappi', 'paksujalka', 'pitkäjalka', 'avosetti', 'meriharakka', 'siperiankurmitsa', 'amerikankurmitsa', 'kapustarinta', 'tundrakurmitsa', 'arohyyppä', 'töyhtöhyyppä', 'pikkutylli', 'tylli', 'mustajalkatylli', 'keräkurmitsa', 'pikkukuovi', 'kuovi', 'isokuovi', 'mustapyrstökuiri', 'punakuiri', 'karikukko', 'isosirri', 'suokukko', 'suippopyrstösirri', 'jänkäsirriäinen', 'kuovisirri', 'lapinsirri', 'pulmussirri', 'suosirri', 'etelänsuosirri', 'merisirri', 'pikkusirri', 'tundravikla', 'palsasirri', 'vesipääsky', 'isovesipääsky', 'rantakurvi', 'rantasipi', 'metsäviklo', 'mustaviklo', 'valkoviklo', 'keltajalkaviklo', 'lampiviklo', 'liro', 'punajalkaviklo', 'jänkäkurppa', 'tundrakurppelo', 'lehtokurppa', 'taivaanvuohi', 'amerikantaivaanvuohi', 'heinäkurppa', 'siperiankurppa', 'pääskykahlaaja', 'aropääskykahlaaja', 'leveäpyrstökihu', 'merikihu', 'tunturikihu', 'lunni', 'riskilä', 'ruokki', 'pikkuruokki', 'etelänkiisla', 'pohjankiisla', 'pikkutiira', 'hietatiira', 'räyskä', 'mustatiira', 'valkosiipitiira', 'riuttatiira', 'kalatiira', 'lapintiira', 'pikkulokki', 'ruusulokki', 'tiiralokki', 'pikkukajava', 'naurulokki', 'mustanmerenlokki', 'kalalokki', 'selkälokki', 'harmaalokki', 'aroharmaalokki', 'etelänharmaalokki', 'ohotanlokki', 'grönlanninlokki', 'isolokki', 'merilokki', 'arokyyhky', 'kalliokyyhky', 'kesykyyhky', 'pulu', 'uuttukyyhky', 'sepelkyyhky', 'turkinkyyhky', 'turturikyyhky', 'idänturturikyyhky', 'käki', 'idänkäki', 'tornipöllö', 'kyläpöllönen', 'huuhkaja', 'hiiripöllö', 'varpuspöllö', 'lehtopöllö', 'viirupöllö', 'lapinpöllö', 'sarvipöllö', 'suopöllö', 'helmipöllö', 'kehrääjä', 'tervapääsky', 'kuningaskalastaja', 'mehiläissyöjä', 'sininärhi', 'harjalintu', 'käenpiika', 'harmaapäätikka', 'palokärki', 'käpytikka', 'valkoselkätikka', 'pikkutikka', 'pohjantikka', 'arokiuru', 'lyhytvarvaskiuru', 'töyhtökiuru', 'kangaskiuru', 'kiuru', 'tunturikiuru', 'törmäpääsky', 'haarapääsky', 'räystäspääsky', 'ruostepääsky', 'isokirvinen', 'mongoliankirvinen', 'nummikirvinen', 'taigakirvinen', 'metsäkirvinen', 'niittykirvinen', 'lapinkirvinen', 'luotokirvinen', 'keltavästäräkki', 'sitruunavästäräkki', 'virtavästäräkki', 'västäräkki', 'tilhi', 'koskikara', 'peukaloinen', 'rautiainen', 'taigarautiainen', 'mustakurkkurautiainen', 'punarinta', 'satakieli', 'etelänsatakieli', 'sinirinta', 'valkotäpläsinirinta', 'sinipyrstö', 'mustaleppälintu', 'leppälintu', 'pensastasku', 'nokitasku', 'sepeltasku', 'mustapäätasku', 'arotasku', 'kivitasku', 'nunnatasku', 'rusotasku', 'aavikkotasku', 'kirjorastas', 'sepelrastas', 'mustarastas', 'harmaakurkkurastas', 'ruostesiipirastas', 'mustakaularastas', 'räkättirastas', 'laulurastas', 'punakylkirastas', 'kulorastas', 'viirusirkkalintu', 'pensassirkkalintu', 'viitasirkkalintu', 'ruokosirkkalintu', 'pikkukultarinta', 'kultarinta', 'ruokokerttunen', 'kenttäkerttunen', 'viitakerttunen', 'luhtakerttunen', 'rytikerttunen', 'rastaskerttunen', 'rusorintakerttu', 'samettipääkerttu', 'kääpiökerttu', 'kirjokerttu', 'hernekerttu', 'pensaskerttu', 'lehtokerttu', 'mustapääkerttu', 'idänuunilintu', 'lapinuunilintu', 'hippiäisuunilintu', 'taigauunilintu', 'kashmirinuunilintu', 'siperianuunilintu', 'ruskouunilintu', 'vuoriuunilintu', 'sirittäjä', 'tiltaltti', 'idäntiltaltti', 'pajulintu', 'hippiäinen', 'tulipäähippiäinen', 'harmaasieppo', 'pikkusieppo', 'idänpikkusieppo', 'sepelsieppo', 'kirjosieppo', 'viiksitimali', 'pyrstötiainen', 'valkopäätiainen', 'sinitiainen', 'talitiainen', 'kuusitiainen', 'töyhtötiainen', 'viitatiainen', 'hömötiainen', 'lapintiainen', 'pähkinänakkeli', 'puukiipijä', 'pussitiainen', 'kuhankeittäjä', 'punapyrstölepinkäinen', 'pikkulepinkäinen', 'mustaotsalepinkäinen', 'isolepinkäinen', 'punapäälepinkäinen', 'närhi', 'kuukkeli', 'harakka', 'pähkinähakki', 'naakka', 'mustavaris', 'varis', 'nokivaris', 'korppi', 'kottarainen', 'punakottarainen', 'varpunen', 'pikkuvarpunen', 'peippo', 'järripeippo', 'keltahemppo', 'viherpeippo', 'tikli', 'vihervarpunen', 'hemppo', 'vuorihemppo', 'urpiainen', 'ruskourpiainen', 'tundraurpiainen', 'kirjosiipikäpylintu', 'pikkukäpylintu', 'isokäpylintu', 'punavarpunen', 'taviokuurna', 'punatulkku', 'nokkavarpunen', 'lapinsirkku', 'pulmunen', 'mäntysirkku', 'keltasirkku', 'peltosirkku', 'pohjansirkku', 'pikkusirkku', 'kultasirkku', 'pajusirkku', 'ruskopääsirkku', 'mustapääsirkku', 'harmaasirkku', 'loxia', 'sterna', 'gavia', 'aves', 'anser', 'anserbranta', 'anatidae', 'cygnus', 'larus', 'passer', 'pernisbuteo', 'jalohaukat', 'alcauria', 'anserini', 'buteo', 'anthus', 'passeriformes', 'laridae', 'turdus', 'charadriiformes', 'haukat', 'anas', 'acanthis', 'paridae', 'falco', 'phylloscopus', 'hirundininae', 'stercorarius', 'pöllöt', 'turdidae', 'päiväpetolinnut', 'numenius', 'sternidae', 'sylvia', 'asio', 'circus', 'columba', 'accipiter', 'parus', 'accipitriformes', 'sirosuohaukka', 'anseriformes', 'pluvialis', 'columbidae', 'tikat', 'dendrocopos', 'fringillidae', 'kotkat', 'melanitta', 'picidae', 'fringilla', 'motacilla', 'tringa', 'accipitridae', 'tsik-sirkku', 'medium picidae', 'koskelot', 'piciformes', 'carduelis', 'corvus', 'hirundinidae', 'larinae', 'passeridae', 'ficedula', 'sylviidae', 'corvidae', 'gaviiformes', 'mergus', 'poecile', 'aquila', 'varpuslinnut', 'käpylinnut', 'tiirat', 'kuikkalinnut', 'linnut', 'harmaahanhet', 'hanhet', 'sorsalinnut', 'pieni kahlaaja', 'joutsenet', 'iso kahlaaja', 'lokit', 'varpuset', 'hiirihaukat', 'päiväpetolinnut', 'ruokkilinnut', 'sorsat', 'kahlaajalinnut', 'kirviset', 'varpuslinnut', 'lokkilinnut', 'rastaat', 'kahlaajat', 'tiaislinnut', 'urpiaiset', 'tiaiset', 'jalohaukkalinnut', 'uunilinnut', 'pääskyt', 'kihut', 'pöllölinnut', 'rastaslinnut', 'petolinnut', 'kuovit', 'keskikokoinen kahlaaja', 'tiiralinnut', 'kertut', 'sarvipöllöt', 'suohaukat', 'kyyhkyt','kettu','rusakko','kaniini','metsäkauris','valkohäntäkauris','orava','liito-orava','piisami','minkki','supikoira','siili', 'lisälaji', 'vesilinnut', 'vesilintu', 'pikkulinnut', 'pikkulintu']
 
 
-keywords_to_separate = [
-    "paikallinen",
-    "paikallista",
-    "paikallisia",
-    "muuttava",
-    "muuttavaa",
-    "muuttavia",
-    "kiert",
-    "kiertelevää",
-    "kiertelevä",
-    "kierteleviä",
-    "kiertelemässä",
-    "kiertelee",
-    "kiertelevät",
-    "ääntelevä",
-    "äänteleviä",
-    "ääntelevää",
-    "laulava",
-    "laulavia",
-    "laulavaa",
-    "laulaa",
-    "soidintava",
-    "soidintavia",
-    "soidintavaa",
-    "varoitteleva",
-    "varoittelevia",
-    "varoittelevaa",
-
-    "pohjoiseen",
-    "koilliseen",
-    "itään",
-    "kaakkoon",
-    "etelään",
-    "lounaaseen",
-    "länteen",
-    "luoteeseen"
-]
 
 numbers = {
     "nolla": "0",
@@ -75,7 +41,100 @@ numbers = {
     "kahdeksankymmentäkaksi": "82"
 }
 
+# NOTE!!! order is important: longer words first
 convert = {
+    "paikallinen": "p",
+    "paikallista": "p",
+    "paikallisia": "p",
+    "muuttavaa": "m",
+    "muuttavia": "m",
+    "muuttava": "m",
+    "kiertelevää": "kiert",
+    "kierteleviä": "kiert",
+    "kiertelevä": "kiert",
+    "kiertelee": "kiert",
+    "kiertelemässä": "kiert",
+    "kiertelevät": "kiert",
+    "äänteleviä": "ä",
+    "ääntelevää": "ä",
+    "ääntelevä": "ä",
+    "laulavia": "Äx", 
+    "laulavaa": "Äx",
+    "laulava": "Äx",
+    "laulaa": "Äx",
+    "soidintavia": "Äx",
+    "soidintavaa": "Äx",
+    "soidintava": "Äx",
+    "varoittelevia": "var ä",
+    "varoittelevaa": "var ä",
+    "varoitteleva": "var ä",
+    "untuvikkoa": "pull",
+    "untuvikko": "pull",
+    "untuikkoa": "pull", # common misspelling
+    "untuikko": "pull", # common misspelling
+    "poikanen": "pull",
+    "poikasta": "pull",
+    "nuori": "juv",
+    "nuorta": "juv",
+    "vanhaa": "ad",
+    "vanha": "ad",
+    "esiaikuinen": "subad",
+    "esiaikuista": "subad",
+    "juhlapukuinen": "jp",
+    "juhlapukuista": "jp",
+    "talvipukuinen": "tp",
+    "talvipukuista": "tp",
+    "vaihtopukuinen": "vp",
+    "vaihtopukuista": "vp",
+    "koirasta": "k",
+    "koiras": "k",
+    "koerasta": "k", # common misspelling
+    "koeras": "k", # common misspelling
+    "urosta": "k",
+    "uros": "k",
+    "naarasta": "n",
+    "nairas": "n", # common misspelling
+    "naaras": "n",
+    "yömuuttavaa": "yöm",
+    "yömuuttavia": "yöm",
+    "yömuuttava": "yöm",
+
+    # taxa
+    "loksia": "loxia",
+    "kygnus": "cygnus",
+    "kyknus": "cygnus",
+    "falko": "falco",
+    "falkko": "falco",
+    "puteo": "buteo",
+    "kavia": "gavia",
+
+    # directions
+    "pohjoiseen": "pohjoiseen",
+    "koilliseen": "koilliseen",
+    "koelliseen": "koilliseen", # common misspelling
+    "itään": "itään",
+    "kaakkoon": "kaakkoon",
+    "etelään": "etelään",
+    "lounaaseen": "lounaaseen",
+    "länteen": "länteen",
+    "luoteeseen": "luoteeseen"
+}
+
+convert_whole_matches = {
+    # codes
+    "kautta": "/",
+    "plus": "+",
+    "b": "p",
+    "pee": "p",
+    "äp": "ä p",
+    "äb": "ä p",
+    "äm": "m",
+    "ääm": "m",
+    "a": "ä",
+    "ää": "ä",
+    "l": "Äx",
+
+    # numbers must only be converted as whole words, otherwise can cause errors
     "nolla": "0",
     "yksi": "1",
     "kaksi": "2",
@@ -151,78 +210,46 @@ convert = {
     "yhdeksänsataa": "",
     "tuhat": "1000",
     "viisitoistatuhatta": "15000",
-    "kymmenentuhatta": "10000",
-
-    "paikallinen": "p",
-    "paikallista": "p",
-    "paikallisia": "p",
-    "muuttava": "m",
-    "muuttavaa": "m",
-    "muuttavia": "m",
-    "kiertelevää": "kiert",
-    "kiertelevä": "kiert",
-    "kierteleviä": "kiert",
-    "kiertelemässä": "kiert",
-    "kiertelee": "kiert",
-    "kiertelevät": "kiert",
-    "ääntelevä": "ä",
-    "äänteleviä": "ä",
-    "ääntelevää": "ä",
-    "laulava": "Äx", # Temp solution to avoid case-sensitivity issues
-    "laulavia": "Äx",
-    "laulavaa": "Äx",
-    "laulaa": "Äx",
-    "soidintava": "Äx",
-    "soidintavia": "Äx",
-    "soidintavaa": "Äx",
-    "varoitteleva": "var ä",
-    "varoittelevia": "var ä",
-    "varoittelevaa": "var ä",
-    "nuori": "juv",
-    "vanha": "ad",
-    "untuvikko": "pull",
-    "untuvikkoa": "pull",
-    "nuori": "juv",
-    "nuorta": "juv",
-    "vanha": "ad",
-    "vanhaa": "ad",
-    "esiaikuinen": "subad",
-    "esiaikuista": "subad",
-    "juhlapukuinen": "jp",
-    "juhlapukuista": "jp",
-    "talvipukuinen": "tp",
-    "talvipukuista": "tp",
-    "vaihtopukuinen": "vp",
-    "vaihtopukuista": "vp",
-    "koiras": "k",
-    "koirasta": "k",
-    "uros": "k",
-    "urosta": "k",
-    "naaras": "n",
-    "naarasta": "n",
-
-    # codes
-    "kautta": "/",
-    "plus": "+",
-    "b": "p",
-    "pee": "p",
-    "äp": "ä p",
-    "äb": "ä p",
-    "äm": "m",
-    "ääm": "m",
-    "a": "ä",
-    "ää": "ä",
-
-    # taxa
-    "loksia": "loxia",
-    "kygnus": "cygnus",
-    "kyknus": "cygnus",
-    "falko": "falco",
-    "falkko": "falco",
-    "puteo": "buteo",
-    "kavia": "gavia"
+    "kymmenentuhatta": "10000"
 }
 
+keywords_to_separate = [
+    "paikallinen",
+    "paikallista",
+    "paikallisia",
+    "muuttava",
+    "muuttavaa",
+    "muuttavia",
+    "kiert",
+    "kiertelevää",
+    "kiertelevä",
+    "kierteleviä",
+    "kiertelemässä",
+    "kiertelee",
+    "kiertelevät",
+    "ääntelevä",
+    "äänteleviä",
+    "ääntelevää",
+    "laulava",
+    "laulavia",
+    "laulavaa",
+    "laulaa",
+    "soidintava",
+    "soidintavia",
+    "soidintavaa",
+    "varoitteleva",
+    "varoittelevia",
+    "varoittelevaa",
+
+    "pohjoiseen",
+    "koilliseen",
+    "itään",
+    "kaakkoon",
+    "etelään",
+    "lounaaseen",
+    "länteen",
+    "luoteeseen"
+]
 
 def replace_ignorecase(substring, replacement, string):
     # Compile a regular expression pattern for case-insensitive matching
@@ -235,12 +262,13 @@ def replace_ignorecase(substring, replacement, string):
 
 
 def cleanup_terms(words):
-
     new_words = []
     for word in words:
         word = word.replace(".", "")
         if word in convert:
             new_words.append(convert[word])
+        elif word in convert_whole_matches:
+            new_words.append(convert_whole_matches[word])
         else:
 #            word = word.replace("-", "/") # Removed because affects ranges as well
             new_words.append(word)
@@ -250,24 +278,21 @@ def cleanup_terms(words):
 
 # TODO: This is partly redundant with cleanup_terms, but is it worthwhile to combine them? 
 def cleanup_keywords(string):
+    print(f"CLEANING: {string}")
+
     # Add spaces so that matching can be done for beginning and end of string as well
     string = " " + string + " "
 
 #    for key, value in convert.items():
 #        string = replace_ignorecase(f" {key} ", f" {value} ", string)
 
-    # First separate important keywords from numbers etc.
-    for key in keywords_to_separate:
-        string = replace_ignorecase(key, f" {key} ", string)
-
-    # Then cleanup (convert) them to codes
+    # Convert and separate important keywords from numbers etc.
     for key, value in convert.items():
-        string = replace_ignorecase(f" {key} ", f" {value} ", string)
-#        string = replace_ignorecase(value, f" {value} ", string)
-        string = string.replace("  ", " ")
+        string = replace_ignorecase(key, f" {value} ", string)
 
     # Return trimmed string
-    return string.strip()
+    print(f"CLEANED: {string}")
+    return string.strip("., ")
 
 
 def get_probable_species_and_distance(string):
@@ -328,8 +353,8 @@ def split_abbreviations(words):
         word = str(word)
         match = pattern.match(word)
         if match:
-            numbers = re.sub(r'[a-zåäö]', '', word)
-            letters = re.sub(r'[0-9]', '', word)
+            numbers = re.sub(r'[a-zåäö]', '', word) # removes letters
+            letters = re.sub(r'[0-9]', '', word) # removes numbers
 #            print(f"DEBUG: {numbers} / {letters}")
             new_words.append(numbers)
             new_words.append(letters)
@@ -429,7 +454,7 @@ def clean_date2(string):
     string = string.replace(" ", ".")
     string = string.replace("..", ".")
 
-    print("CLEANING DATE " + string)
+#    print("CLEANING DATE " + string)
 
     string = string.rstrip("p")
 
@@ -448,7 +473,7 @@ def clean_date2(string):
         return validate_date2(string)
     
     parts = string.split(".")
-    print("---> date string:/" + string + "/")
+#    print("---> date string:/" + string + "/")
     if parts[0] in days:
         parts[0] = days[parts[0]]
     if parts[1] in months:
@@ -461,11 +486,67 @@ def clean_date2(string):
     return validate_date2(string)
 
 
+# Input: location name
+# Output: named place, coordinate name, location name
+def match_location(location):
+    print(f"~~LOCATION: {location}")
+    conversions = data_transcript.location_conversions
+
+    '''
+    # NOTE: if you switch to use this, you need to adjust threshold value and direction
+    # Absolute character change distance, excluding spaces
+    best_match = None
+    best_dist = 100
+
+    for key, value in conversions.items():
+        dist = editdistance.eval(location, key)
+
+        # Lower is better
+        if dist < best_dist:
+            best_match = key
+            best_dist = dist
+    '''
+
+    # Relative edit distance
+    best_match = None
+    best_dist = 0
+
+    for key, value in conversions.items():
+        ratio = fuzz.token_set_ratio(location, key)
+
+        # Higher is better
+        if ratio > best_dist:
+            best_dist = ratio
+            best_match = key
+
+    print(f"~~BEST MATCH: {best_match} DIST {best_dist}")
+    
+    if best_dist > 80: # 70 is a ok value, 80 is a careful value
+        # Return named place 
+        if "named_place" in conversions[best_match]:
+            return conversions[best_match]["named_place"], "", ""
+        # Return cleaned coordinate name and location name 
+        else:
+            return "", conversions[best_match]["location_name"], conversions[best_match]["location_name"]
+    
+    # Return just raw name as coordinate name and location name
+    return "", location, location.title()
+    
+
+    # ABBA
+    # return one of these options
+    # named place
+    # coordinate name and locality name, cleaned
+    # coordinate name and locality name, not cleaned, when no match
+
 
 '''
 Ideas for future:
 
-- Warn about pyy
+- Sometimes laulavaa -> "l"
+- Warn about lisälaji, pyy
+- Warn about too long string between pop's (e.g. 100 chars)
+- Warn if M & P in same obs
 - Warn about missing date
 - Warn byt pyy on last row
 - Bug: if last word is pop, outputs it as "pyy"
@@ -484,6 +565,15 @@ Ideas for future:
 - Cannot make fix to last row, e.g. if ends with this: "Sinisorsa. Yli 100b. Pop. Päivä. 16.4. 2001. Pop. Korjaus. Pop."
 - n parvi / n parvea -> this and anything that follows to Notes (Unless there's a keyword for notes)
 - Possibility to add loppupivä, which is cleared whenever start date is cleared
+- Warn about rare species (low prio)
+
+- Convert:
+- koelliseen
+- koerasta
+- "naarasta" -> " n"
+- "koirasta" -> " k"
+- untuikkoa -> pull
+- untuvikkoa -> pull
 
 
 Challenges:
@@ -515,7 +605,6 @@ Käyttöohjeita:
 
 
 # Get data
-import data_transcript
 transcript = data_transcript.transcript
 filename = data_transcript.filename
 
@@ -539,14 +628,6 @@ transcript = transcript.replace(" bop. ", " pop ")
 transcript = transcript.replace(" bop ", " pop ")
 transcript = transcript.replace(" pp", " p pop")
 transcript = transcript.replace(" pop.", " pop ")
-
-# Common location names
-transcript = transcript.replace("suomen oja", "suomenoja")
-transcript = transcript.replace("suomenoja tulvaniitty", "suomenoja, tulvaniitty")
-transcript = transcript.replace("suomenoja satama", "suomenoja, satama")
-transcript = transcript.replace("friisin kallio", "friisinkallio")
-transcript = transcript.replace("porkkala kärki", "porkkala, pampskatan")
-
 
 
 rows = transcript.split(" pop ")
@@ -577,7 +658,7 @@ for row in rows:
     rest = ""
 
     words = row.split(" ")
-    print(f"/{row}/")
+#    print(f"/{row}/")
 
     # Check if we need to skip the previous row / location / date
     fixword = words[0].replace(".", "")
@@ -601,7 +682,7 @@ for row in rows:
     distance_paivamaara = editdistance.eval(date_word, "päivämäärä")
     # Closest species: tavi/4, ruisrääkkä/7, härkä
     if "aika" == date_word or distance_paiva < 3 or distance_paivamaara < 5:
-        print("Date word:" + words[0] + ":")
+#        print("Date word:" + words[0] + ":")
         raw_date = words[1:]
         print(f"RAW DATE: {raw_date}")
 #        date, date_is_valid = clean_date(".".join(raw_date))
@@ -619,10 +700,13 @@ for row in rows:
     distance = editdistance.eval(words[0], "paikka")
     # Closest species: kuikka/2
     if distance < 2:
-        print("Location word:" + words[0] + ":")
+#        print("Location word:" + words[0] + ":")
         location = ' '.join(words[1:])
-        location = location.title()
-        print(f"LOCATION: {location}")
+        # TODO: right-trim " p"
+#        location = location.title()
+#        print(f"LOCATION: {location}")
+        # Output: named place, coordinate name, location name
+        named_place, coordinate_name, location_name = match_location(location)
         prev_row_type = "location"
         continue
 
@@ -679,6 +763,11 @@ for row in rows:
     # Join everything as a string, without dots
     rest = [str(x) for x in rest]
     count = ' '.join(rest)
+
+
+    # If important words are still not converted to codes due to not having a space between them and a number, do conversion again
+    count = cleanup_keywords(count)
+
 #    count = cleanup_keywords(count) # TODO: is this needed? Only if there are keywords or terms that Whisper concatenate to numbers without space. Are there such with the large model?
 
     # Identify statuses. This can be done using individual words, if we can trust that Whisper does not concatenate numbers and letters together.
@@ -716,9 +805,9 @@ for row in rows:
         "Lisätiedot - Keruutapahtuma": f"Digitoitu Lintukuiskaajalla {today}, tiedosto {filename}",
         "Maa - Keruutapahtuma": "",
         "Kunta - Keruutapahtuma": "",
-        "Nimetty paikka - Keruutapahtuma": "",
-        "Koordinaatit - Keruutapahtuma": location,
-        "Paikannimet - Keruutapahtuma": location,
+        "Nimetty paikka - Keruutapahtuma": named_place,
+        "Koordinaatit - Keruutapahtuma": coordinate_name,
+        "Paikannimet - Keruutapahtuma": location_name,
         "Laji - Määritys": most_probable_species,
         "Määrä - Havainto": count,
         "Lisätiedot - Havainto": "",

@@ -13,6 +13,10 @@ filename = ""
 
 #transcript = "päivämääri. 1.1.2023 pop. paikk. Latokaski pop. talitiainen 1 p pop. valkopäätiainen 1 ä pop. corjaus. pop. sinitiainen 1 ä pop. paikka. kuun kamara pop. korjas. pop. paikko Suomenoja pop. kuusitiainen 1 Ä pop. käpytikka 1 p"
 
+#transcript = " Päivämäärä 18. huhtikuuta 1998, POP. Paikka, Haljas, POP. Rautiainen, 7P, POP. Paikka Suomen Oja POP Meriharakka, 190P, pop Paikka suomen oja satama POP. Meriharakka, 3M, POP. Paikka Suomen oja tulva niitti POP Jouhisorsa, neljä koirasta, kaksi naarasta, P, POP. paikka Tähti torni mäki POP Tavi, 50P,  POP. POP paikka medvast morfaarden pop Haapana, 6P, POP. Paikka Laaja lahti villa elviik pop Metsäviklo, 5P, POP. paikka kaisamniemi puuntarha pop Metsäviklo, 2M, POP. Puneelkäviklo, 2P, POP. paikka Porkkala körkki pop Tylli, POP. paikka mor färden Lehtokurppa, 26P pop paikka joku ihan muu paikannimi pop talitiainen 1p pop paikka Olari pop sinitiainen pop ruotsin ura pop tilhi pop paikka nuuksio pop hömötiainen pop paikka finnoo pop liejukana"
+
+#transcript = "päivämäärä 1.1.2023 pop paikka suomenoja pop talitiainen 1p pop paikka Laajalahti pop laulujoutsen 2 p pop päivämäärä 2.1.2023 pop sinitiainen 3 p pop"
+
 
 # Test for date formats
 '''
