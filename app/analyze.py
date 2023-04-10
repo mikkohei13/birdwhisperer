@@ -25,6 +25,8 @@ start = time.time()
 print("start at " + str(start))
 
 model = whisper.load_model(model)
+print("model loaded at ", time.time())
+
 result = model.transcribe(filename, fp16=False, language="Finnish")
 #print(result["text"])
 #time.sleep(1)
